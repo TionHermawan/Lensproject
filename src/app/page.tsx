@@ -47,20 +47,20 @@ export default function Home() {
   return (
     <>
       <div className={`transition-all duration-500 ${readingPoem ? 'opacity-10 blur-sm pointer-events-none' : ''}`}>
-        <nav className="flex justify-between items-center py-8 px-8 md:px-16 sticky top-0 bg-bg/90 backdrop-blur-md z-10 border-b border-border/10">
-          <div className="flex items-center gap-4">
+        <nav className="flex justify-between items-center py-4 px-8 md:px-16 sticky top-0 bg-bg/90 backdrop-blur-md z-10 border-b border-border/10">
+          <div className="flex items-center gap-3">
             <img 
               src="/logo.png" 
               alt="Lens Community Logo" 
-              className="h-12 w-auto object-contain"
+              className="h-10 w-auto object-contain"
               onError={(e) => {
                 // Fallback jika logo.png belum ada
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.parentElement?.querySelector('.fallback-logo')?.classList.remove('hidden');
               }}
             />
-            <div className="fallback-logo hidden w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white font-bold">L</div>
-            <div className="font-serif text-2xl italic tracking-wide text-text">Lens Community</div>
+            <div className="fallback-logo hidden w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold text-xs">L</div>
+            <div className="font-serif text-xl italic tracking-wide text-text">Lens Community</div>
           </div>
           <div className="hidden md:flex space-x-8 text-sm font-medium">
             <a href="#hall-of-fame" className="hover:text-accent transition-colors">Hall of Fame</a>
