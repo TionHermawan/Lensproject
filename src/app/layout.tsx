@@ -8,9 +8,6 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 export const metadata: Metadata = {
   title: "Menuju Temu Sastra: Lentera Puisi 2026",
   description: "Medium publikasi antologi puisi, merayakan kata dalam keheningan.",
-  icons: {
-    icon: "/logo.png",
-  },
 };
 
 export default function RootLayout({
