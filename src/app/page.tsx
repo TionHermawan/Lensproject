@@ -1,65 +1,208 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { supabaseFetch } from '@/lib/supabase';
+import ReadingMode from '@/components/ReadingMode';
 
 export default function Home() {
+  const [readingPoem, setReadingPoem] = useState<any | null>(null);
+  const [poems, setPoems] = useState<any[]>([]);
+  const [winners, setWinners] = useState<any[]>([]);
+  const [themes, setThemes] = useState<any[]>([]);
+  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [activeTheme, setActiveTheme] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const [poemsData, themesData, sponsorsData] = await Promise.all([
+          supabaseFetch('poems', 'select=*,author:authors(name)&order=created_at.desc'),
+          supabaseFetch('themes', 'select=*'),
+          supabaseFetch('sponsors', 'select=*')
+        ]);
+
+        if (poemsData) {
+          setPoems(poemsData);
+          setWinners(poemsData.filter((p: any) => p.is_winner).sort((a: any, b: any) => (a.rank || 99) - (b.rank || 99)));
+        }
+        if (themesData) setThemes(themesData);
+        if (sponsorsData) setSponsors(sponsorsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const filteredPoems = activeTheme === 'all' 
+    ? poems 
+    : poems.filter(p => p.theme_id?.toString() === activeTheme.toString());
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <>
+      <div className={`transition-all duration-500 ${readingPoem ? 'opacity-10 blur-sm pointer-events-none' : ''}`}>
+        <nav className="flex justify-between items-center py-8 px-8 md:px-16 sticky top-0 bg-bg/90 backdrop-blur-md z-10 border-b border-border/10">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/logo.png" 
+              alt="Lens Community Logo" 
+              className="h-12 w-auto object-contain"
+              onError={(e) => {
+                // Fallback jika logo.png belum ada
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement?.querySelector('.fallback-logo')?.classList.remove('hidden');
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="fallback-logo hidden w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white font-bold">L</div>
+            <div className="font-serif text-2xl italic tracking-wide text-text">Lens Community</div>
+          </div>
+          <div className="hidden md:flex space-x-8 text-sm font-medium">
+            <a href="#hall-of-fame" className="hover:text-accent transition-colors">Hall of Fame</a>
+            <a href="#katalog" className="hover:text-accent transition-colors">Katalog</a>
+            <a href="#sponsor" className="hover:text-accent transition-colors">Sponsor</a>
+          </div>
+        </nav>
+
+        <header className="text-center py-24 px-4 max-w-3xl mx-auto">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-serif text-5xl md:text-7xl mb-6 text-text"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Menuju Temu Sastra: <span className="text-accent italic">Lentera Puisi 2026</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="font-light text-gray-600 text-lg md:text-xl"
+          >
+            Sebuah perjalanan menuju perayaan kata, merayakan kedalaman makna dalam harmoni visual.
+          </motion.p>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
+          {/* Hall of Fame */}
+          <section id="hall-of-fame" className="py-16">
+            <h2 className="font-serif text-3xl text-center mb-12">Hall of Fame</h2>
+            
+            {loading ? (
+              <div className="text-center text-gray-400">Memuat data...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {winners.map((winner, idx) => (
+                  <motion.div
+                    key={winner.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      onClick={() => setReadingPoem(winner)}
+                      className="relative bg-white/80 backdrop-blur-sm p-8 border border-primary/30 cursor-pointer group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+                    >
+                      <div className="absolute -top-3 left-6 bg-highlight px-3 font-serif italic text-sm text-text border border-border">
+                        Juara {winner.rank}
+                      </div>
+                    <h3 className="font-serif text-2xl mb-2 group-hover:text-accent transition-colors">{winner.title}</h3>
+                    <p className="text-sm text-primary mb-6 font-serif italic">{winner.author?.name}</p>
+                    <p className="font-light italic text-gray-600 flex-grow line-clamp-4">
+                      {winner.content.substring(0, 150)}...
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Katalog */}
+          <section id="katalog" className="py-16">
+            <h2 className="font-serif text-3xl text-center mb-8">Eksplorasi Karya</h2>
+            
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              <button 
+                onClick={() => setActiveTheme('all')}
+                className={`px-6 py-2 rounded-full border transition-all ${
+                  activeTheme === 'all' 
+                    ? 'bg-[#2D2D2D] text-white border-[#2D2D2D]' 
+                    : 'border-[#E5E0D8] text-[#2D2D2D] hover:bg-gray-100'
+                }`}
+              >
+                Semua
+              </button>
+              {themes.map(theme => (
+                <button 
+                  key={theme.id}
+                  onClick={() => setActiveTheme(theme.id)}
+                  className={`px-6 py-2 rounded-full border transition-all ${
+                    activeTheme === theme.id 
+                    ? 'bg-primary text-white border-primary' 
+                    : 'border-border/30 text-text hover:bg-highlight'
+                }`}
+              >
+                {theme.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {!loading && filteredPoems.length === 0 && (
+              <p className="col-span-full text-center text-primary/60">Tidak ada puisi di kategori ini.</p>
+            )}
+            {filteredPoems.map((poem, idx) => (
+              <motion.div
+                key={poem.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.05 }}
+                onClick={() => setReadingPoem(poem)}
+                className="bg-white/50 backdrop-blur-sm p-8 border border-border/20 cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col h-full"
+              >
+                <h3 className="font-serif text-xl mb-2 group-hover:text-accent transition-colors">{poem.title}</h3>
+                <p className="text-sm text-primary/70 mb-6 font-serif italic">{poem.author?.name}</p>
+                  <p className="font-light italic text-gray-600 flex-grow line-clamp-4">
+                    {poem.content.substring(0, 150)}...
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* Sponsor */}
+          <section id="sponsor" className="py-24 border-t border-border/20 mt-16">
+            <h2 className="font-serif text-2xl text-center mb-12 text-primary/60">Didukung Oleh</h2>
+            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+              {sponsors.map(sponsor => (
+                <a 
+                  key={sponsor.id} 
+                  href={sponsor.website_url || '#'} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:scale-110 transition-transform duration-300"
+                  title={sponsor.name}
+                >
+                  {sponsor.logo_url ? (
+                    <img src={sponsor.logo_url} alt={sponsor.name} className="h-12 md:h-16 w-auto object-contain" />
+                  ) : (
+                    <div className="font-serif text-2xl font-semibold text-text">{sponsor.name}</div>
+                  )}
+                </a>
+              ))}
+              {!loading && sponsors.length === 0 && (
+                <div className="font-serif text-2xl font-semibold opacity-40">Lens Foundation</div>
+              )}
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <ReadingMode poem={readingPoem} onClose={() => setReadingPoem(null)} />
+    </>
   );
 }
