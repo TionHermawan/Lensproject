@@ -50,7 +50,7 @@ export default function Home() {
         <nav className="flex justify-between items-center py-8 px-8 md:px-16 sticky top-0 bg-bg/90 backdrop-blur-md z-10 border-b border-border/10">
           <div className="flex items-center gap-4">
             <img 
-              src="/logo.png" 
+              src="/favicon.png" 
               alt="Lens Community Logo" 
               className="h-16 md:h-20 w-auto object-contain"
               onLoad={(e) => {
