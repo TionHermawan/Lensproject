@@ -52,15 +52,19 @@ export default function Home() {
             <img 
               src="/logo.png" 
               alt="Lens Community Logo" 
-              className="h-12 w-auto object-contain"
+              className="h-16 md:h-20 w-auto object-contain"
+              onLoad={(e) => {
+                // Sembunyikan teks teks jika logo berhasil dimuat karena logo sudah ada tulisannya
+                e.currentTarget.parentElement?.querySelector('.brand-text')?.classList.add('hidden');
+              }}
               onError={(e) => {
-                // Fallback jika logo.png belum ada
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.parentElement?.querySelector('.fallback-logo')?.classList.remove('hidden');
+                e.currentTarget.parentElement?.querySelector('.brand-text')?.classList.remove('hidden');
               }}
             />
             <div className="fallback-logo hidden w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white font-bold">L</div>
-            <div className="font-serif text-2xl italic tracking-wide text-text">Lens Community</div>
+            <div className="brand-text font-serif text-2xl italic tracking-wide text-text">Lens Community</div>
           </div>
           <div className="hidden md:flex space-x-8 text-sm font-medium">
             <a href="#hall-of-fame" className="hover:text-accent transition-colors">Hall of Fame</a>
