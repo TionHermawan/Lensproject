@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Menuju Temu Sastra: Lentera Puisi 2026",
+  title: "Temu Sastra: Lentera Puisi 2026",
   description: "Medium publikasi antologi puisi, merayakan kata dalam keheningan.",
   icons: {
     icon: "/favicon.png",

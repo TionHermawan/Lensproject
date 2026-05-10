@@ -75,7 +75,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             className="font-serif text-5xl md:text-7xl mb-6 text-text"
           >
-            Menuju Temu Sastra: <span className="text-accent italic">Lentera Puisi 2026</span>
+            Temu Sastra: <br /> <span className="text-accent italic">Lentera Puisi 2026</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -175,27 +175,27 @@ export default function Home() {
           </section>
 
           {/* Sponsor */}
-          <section id="sponsor" className="py-24 border-t border-border/20 mt-16">
-            <h2 className="font-serif text-2xl text-center mb-12 text-primary/60">Didukung Oleh</h2>
-            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+          <section id="sponsor" className="py-8 border-t border-border/20 mt-4">
+            <h2 className="font-serif text-sm text-center mb-4 text-primary/60 uppercase tracking-widest">Didukung Oleh</h2>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
               {sponsors.map(sponsor => (
                 <a 
                   key={sponsor.id} 
                   href={sponsor.website_url || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:scale-110 transition-transform duration-300"
+                  className="hover:scale-105 transition-transform duration-300"
                   title={sponsor.name}
                 >
                   {sponsor.logo_url ? (
-                    <img src={sponsor.logo_url} alt={sponsor.name} className="h-12 md:h-16 w-auto object-contain" />
+                    <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 md:h-14 w-auto object-contain" />
                   ) : (
-                    <div className="font-serif text-2xl font-semibold text-text">{sponsor.name}</div>
+                    <div className="font-serif text-lg font-semibold text-text">{sponsor.name}</div>
                   )}
                 </a>
               ))}
               {!loading && sponsors.length === 0 && (
-                <div className="font-serif text-2xl font-semibold opacity-40">Lens Foundation</div>
+                <div className="font-serif text-lg font-semibold opacity-40">Lens Foundation</div>
               )}
             </div>
           </section>
