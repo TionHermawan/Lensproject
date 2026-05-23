@@ -28,7 +28,10 @@ export async function supabaseInsert(table: string, body: any) {
     headers: getHeaders(),
     body: JSON.stringify(body)
   });
-  if (!response.ok) throw new Error('Gagal menambah data');
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Gagal menambah data');
+  }
   return response.json();
 }
 
@@ -38,7 +41,10 @@ export async function supabaseUpdate(table: string, id: number, body: any) {
     headers: getHeaders(),
     body: JSON.stringify(body)
   });
-  if (!response.ok) throw new Error('Gagal mengubah data');
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Gagal mengubah data');
+  }
   return response.json();
 }
 
@@ -47,7 +53,10 @@ export async function supabaseDelete(table: string, id: number) {
     method: 'DELETE',
     headers: getHeaders()
   });
-  if (!response.ok) throw new Error('Gagal menghapus data');
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || 'Gagal menghapus data');
+  }
   return true;
 }
 

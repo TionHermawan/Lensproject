@@ -89,8 +89,8 @@ export default function AdminDashboard() {
       await supabaseDelete(table, id);
       alert('Berhasil dihapus!');
       loadData();
-    } catch (err) {
-      alert('Gagal menghapus (mungkin data ini masih terhubung dengan data lain)');
+    } catch (err: any) {
+      alert(`Gagal menghapus: ${err.message} (mungkin data ini masih terhubung dengan data lain atau karena RLS)`);
     }
   };
 
@@ -101,14 +101,14 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     try {
       await supabaseInsert('poems', {
-        title, slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), content,
+        title, slug: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`, content,
         author_id: parseInt(authorId), theme_id: parseInt(themeId),
         is_winner: isWinner, rank: isWinner && rank ? parseInt(rank) : null
       });
       alert('Puisi tersimpan!');
       setTitle(''); setContent(''); setAuthorId(''); setThemeId(''); setIsWinner(false); setRank('');
       loadData();
-    } catch (err) { alert('Gagal'); } finally { setIsSubmitting(false); }
+    } catch (err: any) { alert(`Gagal: ${err.message}`); } finally { setIsSubmitting(false); }
   };
 
   const handleAddAuthor = async (e: React.FormEvent) => {
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       alert('Penulis tersimpan!');
       setAuthorName(''); setAuthorBio('');
       loadData();
-    } catch (err) { alert('Gagal'); } finally { setIsSubmitting(false); }
+    } catch (err: any) { alert(`Gagal: ${err.message}`); } finally { setIsSubmitting(false); }
   };
 
   const handleAddTheme = async (e: React.FormEvent) => {
@@ -130,13 +130,13 @@ export default function AdminDashboard() {
     try {
       await supabaseInsert('themes', { 
         name: themeName, 
-        slug: themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-'), 
+        slug: `${themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`, 
         description: themeDesc 
       });
       alert('Tema tersimpan!');
       setThemeName(''); setThemeDesc('');
       loadData();
-    } catch (err) { alert('Gagal'); } finally { setIsSubmitting(false); }
+    } catch (err: any) { alert(`Gagal: ${err.message}`); } finally { setIsSubmitting(false); }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
