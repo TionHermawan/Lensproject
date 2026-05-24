@@ -19,6 +19,7 @@ export default function Home() {
   const [buyerPhone, setBuyerPhone] = useState('');
   const [buyerAddress, setBuyerAddress] = useState('');
   const [buyQuantity, setBuyQuantity] = useState<number | string>(1);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleBuySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,12 +63,12 @@ export default function Home() {
   return (
     <>
       <div className={`transition-all duration-500 ${readingPoem ? 'opacity-10 blur-sm pointer-events-none' : ''}`}>
-        <nav className="flex justify-between items-center py-4 px-8 md:px-16 sticky top-0 bg-bg/90 backdrop-blur-md z-10 border-b border-border/10">
+        <nav className="flex justify-between items-center py-4 px-4 md:px-16 sticky top-0 bg-bg/95 backdrop-blur-md z-50 border-b border-border/10 transition-all duration-300">
           <div className="flex items-center gap-3">
             <img
               src="/logo.png"
               alt="Lens Community Logo"
-              className="h-10 w-auto object-contain"
+              className="h-8 md:h-10 w-auto object-contain"
               onError={(e) => {
                 // Fallback jika logo.png belum ada
                 e.currentTarget.style.display = 'none';
@@ -75,15 +76,46 @@ export default function Home() {
               }}
             />
             <div className="fallback-logo hidden w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold text-xs">L</div>
-            <div className="font-serif text-xl italic tracking-wide text-text">Lens Community</div>
+            <div className="font-serif text-lg md:text-xl italic tracking-wide text-text">Lens Community</div>
           </div>
+          
+          {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8 text-sm font-medium">
             <a href="#hall-of-fame" className="hover:text-accent transition-colors">Hall of Fame</a>
             <a href="#katalog" className="hover:text-accent transition-colors">Katalog</a>
             <a href="#buku-fisik" className="hover:text-accent transition-colors">Buku Fisik</a>
             <a href="#sponsor" className="hover:text-accent transition-colors">Sponsor</a>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 text-text hover:text-accent transition-colors focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </nav>
+
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden fixed left-0 right-0 bg-bg/95 backdrop-blur-md border-b border-border/10 transition-all duration-300 ease-in-out z-40 overflow-hidden ${
+            isMobileMenuOpen ? 'max-h-64 opacity-100 py-4 shadow-lg' : 'max-h-0 opacity-0 py-0'
+          }`}
+        >
+          <div className="flex flex-col px-6 space-y-4 text-center font-serif text-lg">
+            <a href="#hall-of-fame" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Hall of Fame</a>
+            <a href="#katalog" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Katalog</a>
+            <a href="#buku-fisik" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Buku Fisik</a>
+            <a href="#sponsor" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors">Sponsor</a>
+          </div>
+        </div>
 
         <header className="text-center py-24 px-4 max-w-3xl mx-auto">
           <motion.h1
