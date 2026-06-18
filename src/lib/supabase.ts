@@ -17,7 +17,7 @@ export async function supabaseFetch(table: string, query: string = 'select=*') {
     if (!response.ok) return [];
     return response.json();
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.warn('Fetch error:', error);
     return [];
   }
 }

@@ -40,7 +40,7 @@ export default function ReadingMode({ poem, onClose }: ReadingModeProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="font-serif text-4xl md:text-5xl mb-2 text-text"
+              className="font-serif text-3xl md:text-4xl font-bold mb-4 text-text"
             >
               {poem.title}
             </motion.h2>
@@ -49,16 +49,16 @@ export default function ReadingMode({ poem, onClose }: ReadingModeProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-accent font-serif italic mb-16"
+              className="text-text font-serif italic mb-12 text-lg md:text-xl"
             >
-              {poem.author?.name}
+              Karya: {poem.author?.name}
             </motion.p>
             
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg leading-loose text-left whitespace-pre-line"
+              className="text-lg md:text-xl font-serif leading-[2.5] text-center whitespace-pre-line text-text"
             >
               {poem.content}
             </motion.div>

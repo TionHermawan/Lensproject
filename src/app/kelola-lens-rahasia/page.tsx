@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState('');
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'puisi' | 'tema' | 'penulis' | 'sponsor'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'puisi' | 'penulis' | 'sponsor'>('dashboard');
 
   // Data State
   const [poems, setPoems] = useState<any[]>([]);
@@ -29,9 +29,6 @@ export default function AdminDashboard() {
   
   const [authorName, setAuthorName] = useState('');
   const [authorBio, setAuthorBio] = useState('');
-  
-  const [themeName, setThemeName] = useState('');
-  const [themeDesc, setThemeDesc] = useState('');
 
   const [sponsorName, setSponsorName] = useState('');
   const [sponsorLink, setSponsorLink] = useState('');
@@ -123,22 +120,6 @@ export default function AdminDashboard() {
     } catch (err: any) { alert(`Gagal: ${err.message}`); } finally { setIsSubmitting(false); }
   };
 
-  const handleAddTheme = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!themeName) return alert('Tema wajib diisi!');
-    setIsSubmitting(true);
-    try {
-      await supabaseInsert('themes', { 
-        name: themeName, 
-        slug: `${themeName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`, 
-        description: themeDesc 
-      });
-      alert('Tema tersimpan!');
-      setThemeName(''); setThemeDesc('');
-      loadData();
-    } catch (err: any) { alert(`Gagal: ${err.message}`); } finally { setIsSubmitting(false); }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -208,9 +189,6 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('puisi')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'puisi' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <FileText size={18} /> Kelola Puisi
           </button>
-          <button onClick={() => setActiveTab('tema')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'tema' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
-            <Hash size={18} /> Kelola Tema
-          </button>
           <button onClick={() => setActiveTab('penulis')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'penulis' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Users size={18} /> Kelola Penulis
           </button>
@@ -244,11 +222,6 @@ export default function AdminDashboard() {
               <Users size={40} className="mx-auto mb-4 text-[#C5A880]" />
               <div className="text-4xl font-serif mb-2">{authors.length}</div>
               <div className="text-gray-500 uppercase tracking-widest text-sm text-xs">Total Penulis</div>
-            </div>
-            <div className="bg-white p-8 border border-[#E5E0D8] shadow-sm text-center">
-              <Hash size={40} className="mx-auto mb-4 text-[#C5A880]" />
-              <div className="text-4xl font-serif mb-2">{themes.length}</div>
-              <div className="text-gray-500 uppercase tracking-widest text-sm text-xs">Total Tema</div>
             </div>
             <div className="bg-white p-8 border border-[#E5E0D8] shadow-sm text-center">
               <Heart size={40} className="mx-auto mb-4 text-accent" />
@@ -318,33 +291,6 @@ export default function AdminDashboard() {
                   {authors.map(a => (
                     <tr key={a.id} className="border-b last:border-0"><td className="p-4">{a.name}</td><td className="p-4 text-sm text-gray-500">{a.bio}</td>
                     <td className="p-4 text-right"><button onClick={()=>handleDelete('authors', a.id)} className="text-red-500"><Trash2 size={18}/></button></td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* KELOLA TEMA TAB */}
-        {activeTab === 'tema' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 bg-white p-6 border border-[#E5E0D8]">
-              <h3 className="font-serif text-xl mb-4 border-b pb-2">Tambah Tema</h3>
-              <form onSubmit={handleAddTheme} className="space-y-4">
-                <input type="text" value={themeName} onChange={e=>setThemeName(e.target.value)} className="w-full border p-2" placeholder="Nama Tema (ex: Alam)" />
-                <textarea value={themeDesc} onChange={e=>setThemeDesc(e.target.value)} rows={4} className="w-full border p-2" placeholder="Deskripsi tema"></textarea>
-                <button type="submit" disabled={isSubmitting} className="w-full bg-[#2D2D2D] text-white p-2">Simpan</button>
-              </form>
-            </div>
-            <div className="lg:col-span-2 bg-white border border-[#E5E0D8] overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b">
-                  <tr><th className="p-4">Tema</th><th className="p-4 text-right">Aksi</th></tr>
-                </thead>
-                <tbody>
-                  {themes.map(t => (
-                    <tr key={t.id} className="border-b last:border-0"><td className="p-4">{t.name}</td>
-                    <td className="p-4 text-right"><button onClick={()=>handleDelete('themes', t.id)} className="text-red-500"><Trash2 size={18}/></button></td></tr>
                   ))}
                 </tbody>
               </table>

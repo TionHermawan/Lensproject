@@ -5,13 +5,14 @@ import { motion } from 'framer-motion';
 import { supabaseFetch } from '@/lib/supabase';
 import ReadingMode from '@/components/ReadingMode';
 
+import Link from 'next/link';
+
 export default function Home() {
   const [readingPoem, setReadingPoem] = useState<any | null>(null);
   const [poems, setPoems] = useState<any[]>([]);
   const [winners, setWinners] = useState<any[]>([]);
-  const [themes, setThemes] = useState<any[]>([]);
+  const [top10Poems, setTop10Poems] = useState<any[]>([]);
   const [sponsors, setSponsors] = useState<any[]>([]);
-  const [activeTheme, setActiveTheme] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,9 +29,14 @@ export default function Home() {
 
         if (poemsData) {
           setPoems(poemsData);
-          setWinners(poemsData.filter((p: any) => p.is_winner).sort((a: any, b: any) => (a.rank || 99) - (b.rank || 99)));
+          // Hall of Fame: Top 3 winners
+          const sortedWinners = poemsData.filter((p: any) => p.is_winner).sort((a: any, b: any) => (a.rank || 99) - (b.rank || 99));
+          setWinners(sortedWinners.slice(0, 3));
+          
+          // Top 10: Best poems overall (we take top 10 based on rank)
+          const sortedAll = [...poemsData].sort((a: any, b: any) => (a.rank || 99) - (b.rank || 99));
+          setTop10Poems(sortedAll.slice(0, 10));
         }
-        if (themesData) setThemes(themesData);
         if (sponsorsData) setSponsors(sponsorsData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -41,10 +47,6 @@ export default function Home() {
 
     fetchData();
   }, []);
-
-  const filteredPoems = activeTheme === 'all'
-    ? poems
-    : poems.filter(p => p.theme_id?.toString() === activeTheme.toString());
 
   return (
     <>
@@ -68,7 +70,7 @@ export default function Home() {
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8 text-sm font-medium">
             <a href="#hall-of-fame" className="hover:text-accent transition-colors">Hall of Fame</a>
-            <a href="#katalog" className="hover:text-accent transition-colors">Katalog</a>
+            <Link href="/katalog" className="hover:text-accent transition-colors">Katalog</Link>
             <a href="#buku-fisik" className="hover:text-accent transition-colors">Buku Fisik</a>
             <a href="#sponsor" className="hover:text-accent transition-colors">Sponsor</a>
           </div>
@@ -97,7 +99,7 @@ export default function Home() {
         >
           <div className="flex flex-col px-6 space-y-4 text-center font-serif text-lg">
             <a href="#hall-of-fame" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Hall of Fame</a>
-            <a href="#katalog" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Katalog</a>
+            <Link href="/katalog" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Katalog</Link>
             <a href="#buku-fisik" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors border-b border-border/5 pb-2">Buku Fisik</a>
             <a href="#sponsor" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-accent transition-colors">Sponsor</a>
           </div>
@@ -130,63 +132,72 @@ export default function Home() {
               <div className="text-center text-gray-400">Memuat data...</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {winners.map((winner, idx) => (
-                  <motion.div
-                    key={winner.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    onClick={() => setReadingPoem(winner)}
-                    className="relative bg-white/80 backdrop-blur-sm p-8 border border-primary/30 cursor-pointer group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
-                  >
-                    <div className="absolute -top-3 left-6 bg-highlight px-3 font-serif italic text-sm text-text border border-border">
-                      Juara {winner.rank}
-                    </div>
-                    <h3 className="font-serif text-2xl mb-2 group-hover:text-accent transition-colors">{winner.title}</h3>
-                    <p className="text-sm text-primary mb-6 font-serif italic">{winner.author?.name}</p>
-                    <p className="font-light italic text-gray-600 flex-grow line-clamp-4">
-                      {winner.content.substring(0, 150)}...
-                    </p>
-                  </motion.div>
-                ))}
+                {winners.map((winner, idx) => {
+                  let badgeColors = "bg-highlight text-text border-border";
+                  let borderColors = "border-primary/30";
+                  let glowEffect = "hover:shadow-xl";
+                  let iconColor = "text-text";
+                  let bgGradient = "bg-white/80";
+                  let titleColor = "group-hover:text-accent";
+                  
+                  if (winner.rank === 1) {
+                    badgeColors = "bg-amber-100 text-amber-900 border-amber-300 shadow-sm";
+                    borderColors = "border-amber-300";
+                    glowEffect = "shadow-[0_0_15px_rgba(251,191,36,0.15)] hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]";
+                    iconColor = "text-amber-500";
+                    bgGradient = "bg-gradient-to-br from-amber-50/90 to-white/90";
+                    titleColor = "group-hover:text-amber-600";
+                  } else if (winner.rank === 2) {
+                    badgeColors = "bg-slate-100 text-slate-800 border-slate-300 shadow-sm";
+                    borderColors = "border-slate-300";
+                    glowEffect = "shadow-[0_0_15px_rgba(148,163,184,0.1)] hover:shadow-[0_0_25px_rgba(148,163,184,0.3)]";
+                    iconColor = "text-slate-500";
+                    bgGradient = "bg-gradient-to-br from-slate-50/90 to-white/90";
+                    titleColor = "group-hover:text-slate-600";
+                  } else if (winner.rank === 3) {
+                    badgeColors = "bg-orange-50 text-orange-900 border-orange-300 shadow-sm";
+                    borderColors = "border-orange-300";
+                    glowEffect = "shadow-[0_0_15px_rgba(251,146,60,0.1)] hover:shadow-[0_0_25px_rgba(251,146,60,0.3)]";
+                    iconColor = "text-orange-500";
+                    bgGradient = "bg-gradient-to-br from-orange-50/90 to-white/90";
+                    titleColor = "group-hover:text-orange-600";
+                  }
+
+                  return (
+                    <motion.div
+                      key={winner.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      onClick={() => setReadingPoem(winner)}
+                      className={`relative backdrop-blur-sm p-8 border cursor-pointer group hover:-translate-y-2 transition-all duration-500 flex flex-col h-full rounded-2xl ${bgGradient} ${borderColors} ${glowEffect}`}
+                    >
+                      <div className={`absolute -top-4 left-6 px-4 py-1.5 font-serif italic text-sm border flex items-center gap-2 rounded-full transition-transform duration-500 group-hover:scale-110 ${badgeColors}`}>
+                        <svg className={`w-4 h-4 ${iconColor}`} fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+                        <span className="font-bold">Juara {winner.rank}</span>
+                      </div>
+                      <h3 className={`font-serif text-2xl mt-3 mb-2 transition-colors ${titleColor}`}>{winner.title}</h3>
+                      <p className="text-sm text-primary mb-6 font-serif italic">{winner.author?.name}</p>
+                      <p className="font-light italic text-gray-600 flex-grow line-clamp-4">
+                        {winner.content.substring(0, 150)}...
+                      </p>
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </section>
 
-          {/* Katalog */}
-          <section id="katalog" className="py-16">
-            <h2 className="font-serif text-3xl text-center mb-8">Eksplorasi Karya</h2>
-
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <button
-                onClick={() => setActiveTheme('all')}
-                className={`px-6 py-2 rounded-full border transition-all ${activeTheme === 'all'
-                    ? 'bg-[#2D2D2D] text-white border-[#2D2D2D]'
-                    : 'border-[#E5E0D8] text-[#2D2D2D] hover:bg-gray-100'
-                  }`}
-              >
-                Semua
-              </button>
-              {themes.map(theme => (
-                <button
-                  key={theme.id}
-                  onClick={() => setActiveTheme(theme.id)}
-                  className={`px-6 py-2 rounded-full border transition-all ${activeTheme === theme.id
-                      ? 'bg-primary text-white border-primary'
-                      : 'border-border/30 text-text hover:bg-highlight'
-                    }`}
-                >
-                  {theme.name}
-                </button>
-              ))}
-            </div>
+          {/* Top 10 Karya Terbaik */}
+          <section id="top-10" className="py-16">
+            <h2 className="font-serif text-3xl text-center mb-12">Top 10 Karya Terbaik</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {!loading && filteredPoems.length === 0 && (
-                <p className="col-span-full text-center text-primary/60">Tidak ada puisi di kategori ini.</p>
+              {!loading && top10Poems.length === 0 && (
+                <p className="col-span-full text-center text-primary/60">Tidak ada puisi yang ditemukan.</p>
               )}
-              {filteredPoems.map((poem, idx) => (
+              {top10Poems.map((poem, idx) => (
                 <motion.div
                   key={poem.id}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -194,15 +205,27 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => setReadingPoem(poem)}
-                  className="bg-white/50 backdrop-blur-sm p-8 border border-border/20 cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col h-full"
+                  className="relative bg-white/50 backdrop-blur-sm p-8 border border-border/20 cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col h-full"
                 >
-                  <h3 className="font-serif text-xl mb-2 group-hover:text-accent transition-colors">{poem.title}</h3>
+                  <div className="absolute -top-3 left-6 bg-highlight px-3 font-serif italic text-sm text-text border border-border">
+                    #{poem.rank || idx + 1}
+                  </div>
+                  <h3 className="font-serif text-xl mb-2 group-hover:text-accent transition-colors mt-2">{poem.title}</h3>
                   <p className="text-sm text-primary/70 mb-6 font-serif italic">{poem.author?.name}</p>
                   <p className="font-light italic text-gray-600 flex-grow line-clamp-4">
                     {poem.content.substring(0, 150)}...
                   </p>
                 </motion.div>
               ))}
+            </div>
+
+            <div className="mt-16 text-center">
+              <Link 
+                href="/katalog" 
+                className="inline-block px-8 py-3 rounded-full bg-primary text-white hover:bg-primary/90 transition-all font-medium hover:shadow-lg transform hover:-translate-y-1"
+              >
+                Lihat Seluruh Karya
+              </Link>
             </div>
           </section>
 
@@ -241,21 +264,19 @@ export default function Home() {
               <div className="w-full md:w-1/2">
                 <div className="mb-8">
                   <h2 className="font-serif text-4xl mb-3 text-text">Miliki Bukunya</h2>
-                  <p className="text-gray-600 font-light">Dapatkan antologi puisi eksklusif Lentera Puisi 2026 dalam bentuk fisik. Cetakan terbatas dengan desain premium. Pembelian kini lebih mudah, aman, dan dapat dilacak pengirimannya melalui Shopee.</p>
+                  <p className="text-gray-600 font-light">Dapatkan antologi puisi eksklusif Lentera Puisi 2026 dalam bentuk fisik. Cetakan terbatas dengan desain premium. Pemesanan kini dapat dilakukan melalui formulir pemesanan resmi.</p>
                 </div>
 
                 <div className="space-y-4">
-                  <a
-                    href="https://shopee.co.id/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full mt-6 bg-[#ee4d2d] hover:bg-[#ee4d2d]/90 text-white font-medium py-4 px-6 rounded-xl transition-all flex justify-center items-center gap-3 hover:shadow-lg transform hover:-translate-y-1"
+                  <Link
+                    href="/beli-buku"
+                    className="w-full mt-6 bg-primary hover:bg-primary/90 text-white font-medium py-4 px-6 rounded-xl transition-all flex justify-center items-center gap-3 hover:shadow-lg transform hover:-translate-y-1 text-center"
                   >
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l.17-.25z"/>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    <span>Pesan Sekarang</span>
-                  </a>
+                    <span>Pesan via Form Resmi</span>
+                  </Link>
                 </div>
               </div>
             </div>
