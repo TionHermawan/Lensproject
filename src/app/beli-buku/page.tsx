@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, Info, Phone } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Info, Phone, RefreshCw } from 'lucide-react';
+import { supabaseInsert } from '@/lib/supabase';
 
 export default function BeliBuku() {
   // Navigation Mobile Menu
@@ -30,6 +31,7 @@ export default function BeliBuku() {
 
   const [isAgreed, setIsAgreed] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -58,7 +60,7 @@ export default function BeliBuku() {
     return encodeURIComponent(text);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -83,11 +85,39 @@ export default function BeliBuku() {
       return;
     }
 
-    setIsSubmitted(true);
+    setIsSaving(true);
     
-    // Redirect to WhatsApp
-    const waUrl = `https://wa.me/6287845112110?text=${getWhatsAppMessage()}`;
-    window.open(waUrl, '_blank');
+    try {
+      const qty = jumlahBuku === 'Lainnya' ? `${customJumlah} Eksemplar` : jumlahBuku;
+      const contributorText = isContributor === 'Ya' ? 'Ya (Kontributor)' : 'Bukan';
+      
+      await supabaseInsert('orders', {
+        buyer_name: namaLengkap,
+        buyer_whatsapp: whatsapp,
+        buyer_email: email,
+        quantity: qty,
+        is_contributor: contributorText,
+        recipient_name: namaPenerima,
+        recipient_phone: hpPenerima,
+        address_detail: alamatDetail,
+        subdistrict: kelurahan,
+        district: kecamatan,
+        city: kotaKabupaten,
+        province: provinsi,
+        postal_code: kodePos,
+        status: 'Pending'
+      });
+      
+      setIsSubmitted(true);
+      
+      // Redirect to WhatsApp
+      const waUrl = `https://wa.me/6287845112110?text=${getWhatsAppMessage()}`;
+      window.open(waUrl, '_blank');
+    } catch (err: any) {
+      setErrorMsg(`Gagal menyimpan pesanan: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
 
@@ -388,10 +418,11 @@ export default function BeliBuku() {
 
                 <button 
                   type="submit" 
-                  className="w-full mt-4 bg-primary hover:bg-primary/95 text-white font-semibold py-4 px-6 rounded-xl transition-all flex justify-center items-center gap-3 hover:shadow-lg transform hover:-translate-y-1"
+                  disabled={isSaving}
+                  className={`w-full mt-4 text-white font-semibold py-4 px-6 rounded-xl transition-all flex justify-center items-center gap-3 transform ${isSaving ? 'bg-primary/70 cursor-not-allowed' : 'bg-primary hover:bg-primary/95 hover:shadow-lg hover:-translate-y-1'}`}
                 >
-                  <Phone size={18} />
-                  Konfirmasi Pembelian (Lanjut ke WhatsApp)
+                  {isSaving ? <RefreshCw className="animate-spin" size={18} /> : <Phone size={18} />}
+                  {isSaving ? 'Menyimpan Pesanan...' : 'Konfirmasi Pembelian (Lanjut ke WhatsApp)'}
                 </button>
               </div>
 

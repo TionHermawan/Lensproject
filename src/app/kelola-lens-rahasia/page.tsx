@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabaseFetch, supabaseInsert, supabaseDelete, supabaseUpload } from '@/lib/supabase';
-import { Trash2, Plus, RefreshCw, LogIn, LayoutDashboard, FileText, Users, Hash, LogOut, Heart, Image as ImageIcon, Upload } from 'lucide-react';
+import { supabaseFetch, supabaseInsert, supabaseDelete, supabaseUpload, supabaseUpdate } from '@/lib/supabase';
+import { Trash2, Plus, RefreshCw, LogIn, LayoutDashboard, FileText, Users, Hash, LogOut, Heart, Image as ImageIcon, Upload, ShoppingCart, Printer, Filter } from 'lucide-react';
 
 export default function AdminDashboard() {
   // Authentication State
@@ -10,14 +10,21 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState('');
 
   // Navigation State
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'puisi' | 'penulis' | 'sponsor'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'puisi' | 'penulis' | 'sponsor' | 'pesanan'>('dashboard');
 
   // Data State
   const [poems, setPoems] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
   const [themes, setThemes] = useState<any[]>([]);
   const [sponsors, setSponsors] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Filters for Orders
+  const [filterName, setFilterName] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterYear, setFilterYear] = useState('');
 
   // Form States
   const [title, setTitle] = useState('');
@@ -62,16 +69,18 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     setLoading(true);
-    const [pData, aData, tData, sData] = await Promise.all([
+    const [pData, aData, tData, sData, oData] = await Promise.all([
       supabaseFetch('poems', 'select=*,author:authors(name)&order=created_at.desc'),
       supabaseFetch('authors', 'select=*&order=created_at.desc'),
       supabaseFetch('themes', 'select=*&order=created_at.desc'),
-      supabaseFetch('sponsors', 'select=*&order=created_at.desc')
+      supabaseFetch('sponsors', 'select=*&order=created_at.desc'),
+      supabaseFetch('orders', 'select=*&order=created_at.desc')
     ]);
     setPoems(pData || []);
     setAuthors(aData || []);
     setThemes(tData || []);
     setSponsors(sData || []);
+    setOrders(oData || []);
     setLoading(false);
   };
 
@@ -154,6 +163,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUpdateStatus = async (id: number, newStatus: string) => {
+    try {
+      await supabaseUpdate('orders', id, { status: newStatus });
+      loadData();
+    } catch (err: any) {
+      alert(`Gagal mengubah status: ${err.message}`);
+    }
+  };
+
+  const filteredOrders = orders.filter(o => {
+    const matchName = o.buyer_name?.toLowerCase().includes(filterName.toLowerCase());
+    const dateObj = new Date(o.created_at);
+    
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const y = String(dateObj.getFullYear());
+
+    const matchDate = filterDate ? d === filterDate.padStart(2, '0') : true;
+    const matchMonth = filterMonth ? m === filterMonth.padStart(2, '0') : true;
+    const matchYear = filterYear ? y === filterYear : true;
+
+    return matchName && matchDate && matchMonth && matchYear;
+  });
+
+
   // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
@@ -180,7 +214,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#F9F8F6] font-sans flex flex-col md:flex-row">
       {/* SIDEBAR */}
-      <div className="w-full md:w-64 bg-white border-r border-[#E5E0D8] p-6 flex flex-col">
+      <div className="w-full md:w-64 bg-white border-r border-[#E5E0D8] p-6 flex flex-col print:hidden">
         <div className="font-serif text-3xl italic mb-10 text-[#2D2D2D]">Lens.</div>
         <nav className="flex-grow space-y-2">
           <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'dashboard' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
@@ -195,6 +229,9 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('sponsor')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'sponsor' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
             <Heart size={18} /> Kelola Sponsor
           </button>
+          <button onClick={() => setActiveTab('pesanan')} className={`w-full flex items-center gap-3 p-3 text-left rounded ${activeTab === 'pesanan' ? 'bg-[#F9F8F6] text-[#C5A880] font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+            <ShoppingCart size={18} /> Kelola Pesanan
+          </button>
         </nav>
         <button onClick={handleLogout} className="mt-auto flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded transition">
           <LogOut size={18} /> Keluar
@@ -202,8 +239,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-1 p-8 md:p-12 h-screen overflow-y-auto">
-        <header className="flex justify-between items-center mb-10">
+      <div className="flex-1 p-8 md:p-12 h-screen overflow-y-auto print:p-0 print:overflow-visible print:h-auto">
+        <header className="flex justify-between items-center mb-10 print:hidden">
           <h2 className="font-serif text-3xl capitalize">{activeTab}</h2>
           <button onClick={loadData} className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E0D8] rounded hover:bg-gray-50">
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Segarkan Data
@@ -376,6 +413,94 @@ export default function AdminDashboard() {
                   ))}
                   {sponsors.length === 0 && (
                     <tr><td colSpan={4} className="p-20 text-center text-gray-400 italic">Belum ada data sponsor.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* KELOLA PESANAN TAB */}
+        {activeTab === 'pesanan' && (
+          <div className="bg-white border border-[#E5E0D8] p-6 print:border-none print:p-0 print:m-0 w-full">
+            
+            {/* Print Header (Only visible on print) */}
+            <div className="hidden print:block text-center mb-8 border-b-2 border-black pb-6">
+              <h1 className="font-serif text-3xl font-bold mb-2 uppercase tracking-wider">Laporan Pemesanan Buku</h1>
+              <h2 className="text-xl text-gray-800 font-serif italic">Antologi Puisi: Lentera Puisi 2026</h2>
+              <div className="mt-4 flex justify-between text-sm text-gray-600 border-t border-gray-300 pt-2">
+                <span>Dicetak pada: {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</span>
+                <span>Total Filtered: {filteredOrders.length} Pesanan</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between gap-4 mb-6 print:hidden">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center border border-gray-200 rounded px-3 py-2 bg-gray-50">
+                  <Filter size={16} className="text-gray-400 mr-2" />
+                  <input type="text" placeholder="Cari Nama..." value={filterName} onChange={e => setFilterName(e.target.value)} className="bg-transparent border-none outline-none text-sm w-32" />
+                </div>
+                <input type="text" placeholder="Tgl (DD)" value={filterDate} onChange={e => setFilterDate(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm w-20 bg-gray-50" />
+                <input type="text" placeholder="Bln (MM)" value={filterMonth} onChange={e => setFilterMonth(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm w-20 bg-gray-50" />
+                <input type="text" placeholder="Thn (YYYY)" value={filterYear} onChange={e => setFilterYear(e.target.value)} className="border border-gray-200 rounded px-3 py-2 text-sm w-24 bg-gray-50" />
+              </div>
+              <button onClick={() => window.print()} className="flex items-center gap-2 bg-text text-white px-4 py-2 rounded hover:bg-black transition shadow-sm">
+                <Printer size={16} /> Cetak Laporan PDF
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto print:overflow-visible print:w-full">
+              <table className="w-full text-left text-sm whitespace-nowrap print:whitespace-normal print:text-[11px] print:border-collapse">
+                <thead className="bg-gray-50 border-b print:bg-gray-100 print:text-black">
+                  <tr>
+                    <th className="p-4 print:p-2 print:border print:border-gray-400">Tanggal</th>
+                    <th className="p-4 print:p-2 print:border print:border-gray-400">Pemesan</th>
+                    <th className="p-4 print:p-2 print:border print:border-gray-400">Kontak</th>
+                    <th className="p-4 print:p-2 print:border print:border-gray-400">Detail Pengiriman</th>
+                    <th className="p-4 print:p-2 print:border print:border-gray-400">Jml</th>
+                    <th className="p-4 text-center print:p-2 print:border print:border-gray-400 print:text-left">Status</th>
+                    <th className="p-4 text-right print:hidden">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map(o => (
+                    <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50 transition print:border print:border-gray-300 print:break-inside-avoid">
+                      <td className="p-4 print:p-2 align-top">{new Date(o.created_at).toLocaleDateString('id-ID')}</td>
+                      <td className="p-4 print:p-2 align-top">
+                        <p className="font-semibold print:font-bold">{o.buyer_name}</p>
+                        <p className="text-xs text-gray-500 print:text-black">{o.is_contributor}</p>
+                      </td>
+                      <td className="p-4 print:p-2 align-top">
+                        <p>{o.buyer_whatsapp}</p>
+                        <p className="text-xs text-gray-500 print:text-black">{o.buyer_email}</p>
+                      </td>
+                      <td className="p-4 print:p-2 whitespace-normal min-w-[250px] align-top">
+                        <p className="font-medium print:font-bold">{o.recipient_name} ({o.recipient_phone})</p>
+                        <p className="text-xs text-gray-600 print:text-black mt-1 leading-relaxed">
+                          {o.address_detail}, Kel. {o.subdistrict}, Kec. {o.district}, {o.city}, {o.province} {o.postal_code}
+                        </p>
+                      </td>
+                      <td className="p-4 print:p-2 align-top text-center">{o.quantity.replace(' Eksemplar', '')}</td>
+                      <td className="p-4 print:p-2 text-center align-top print:text-left">
+                        <select 
+                          value={o.status} 
+                          onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
+                          className={`text-xs font-semibold rounded-full px-3 py-1 border outline-none print:appearance-none print:border-none print:bg-transparent print:p-0 print:text-black print:font-normal ${o.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : o.status === 'Batal' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Selesai">Selesai</option>
+                          <option value="Batal">Batal</option>
+                        </select>
+                      </td>
+                      <td className="p-4 text-right print:hidden align-top">
+                        <button onClick={() => handleDelete('orders', o.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-full transition">
+                          <Trash2 size={16}/>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredOrders.length === 0 && (
+                    <tr><td colSpan={7} className="p-10 text-center text-gray-400 italic print:border print:border-gray-400">Tidak ada pesanan.</td></tr>
                   )}
                 </tbody>
               </table>
