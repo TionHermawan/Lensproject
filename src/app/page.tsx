@@ -242,18 +242,9 @@ export default function Home() {
                   className="relative group cursor-pointer"
                 >
                   <div className="w-64 h-96 bg-primary rounded-r-2xl rounded-l-md shadow-2xl overflow-hidden relative border-l-8 border-[#3b352b] transform transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-y-12">
-                    <div className="absolute inset-0 bg-black/20 mix-blend-multiply pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
-                    <div className="p-8 h-full flex flex-col justify-between text-[#E5E0D8]">
-                      <div>
-                        <p className="text-xs tracking-widest uppercase mb-2 opacity-80">Antologi</p>
-                        <h3 className="font-serif text-3xl font-bold leading-tight">Lentera<br />Puisi 2026</h3>
-                      </div>
-                      <div className="mt-auto">
-                        <div className="w-12 h-1 bg-accent mb-4"></div>
-                        <p className="font-light text-sm opacity-90">Lens Community</p>
-                      </div>
-                    </div>
+                    <img src="/cover.jpeg" alt="Cover Lentera Puisi 2026" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/10 mix-blend-multiply pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-black/20 pointer-events-none"></div>
                   </div>
                   {/* Efek bayangan */}
                   <div className="absolute -bottom-6 left-4 right-4 h-6 bg-black/30 blur-xl rounded-[100%] transition-opacity duration-500 group-hover:opacity-60"></div>
